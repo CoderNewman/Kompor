@@ -5,7 +5,7 @@ Created on Sep 19, 2017
 '''
 import json
 
-from configure.cn_setting import AWS_HOST_ADD
+from configure.setting_cn import AWS_HOST_ADD
 from crawl_lib.crawl import crawl
 
 craw = crawl()

@@ -55,7 +55,7 @@ class CassandraDao(object):
         if consistency_level:
             prepared_statement.consistency_level = consistency_level
         else:
-            prepared_statement.consistency_level = ConsistencyLevel.LOCAL_QUORUM
+            prepared_statement.consistency_level = ConsistencyLevel.ONE
         return session.execute(prepared_statement, parameters)
     
     def get_prepared_statement(self, sql, consistency_level=None, keyspace=None):
@@ -67,7 +67,7 @@ class CassandraDao(object):
         if consistency_level:
             prepared_statement.consistency_level = consistency_level
         else:
-            prepared_statement.consistency_level = ConsistencyLevel.LOCAL_QUORUM
+            prepared_statement.consistency_level = ConsistencyLevel.ONE
         return session, prepared_statement
         
         
@@ -87,7 +87,7 @@ class CassandraDao(object):
             if consistency_level:
                 batch = BatchStatement(consistency_level=consistency_level)
             else:
-                batch = BatchStatement(consistency_level=ConsistencyLevel.LOCAL_QUORUM)
+                batch = BatchStatement(consistency_level=ConsistencyLevel.ONE)
             
             for paras in parameters:
                 batch.add(prepared_statement, paras)        
@@ -126,7 +126,7 @@ class CassandraDao(object):
         if consistency_level:
             batch = BatchStatement(consistency_level=consistency_level)
         else:
-            batch = BatchStatement(consistency_level=ConsistencyLevel.LOCAL_QUORUM)
+            batch = BatchStatement(consistency_level=ConsistencyLevel.ONE)
         
         for sql, paras in zip(sqls, parameters):
             batch.add(SimpleStatement(sql), paras)

@@ -5,8 +5,10 @@ Created on Sep 18, 2017
 '''
 import enum
 
-CRAWL_PAGE_TYPE = enum.Enum("CRAWL_PAGE_TYPE", (
-    'json',
-    'text',
-    'html',
-    ))
+CRAWL_PAGE_TYPE = enum.Enum("CRAWL_PAGE_TYPE", 
+                            (
+                                'json',
+                                'text',
+                                'html',
+                                )
+                            )

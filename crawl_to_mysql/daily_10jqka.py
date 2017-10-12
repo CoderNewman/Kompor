@@ -13,7 +13,7 @@ if base_dir not in sys.path:
 from dao.mysql_dao import mysql_dao as mysql_db
 from crawl_lib.crawl import crawl
 from configure.area_config import AREA_KEY
-from configure.cn_setting import DAY, LINE, OFF_SHARE, ADJ_SHARE
+from configure.setting import DAY, LINE, OFF_SHARE, ADJ_SHARE
 from url_lib import url_cn
 from crawl_to_cassandra.basic_10jqka import flush
 from tools.common import filt_codes
@@ -156,6 +156,9 @@ def main():
         
     for p in prs:
         p.start()
+        
+    for p in prs:
+        p.join()
 
 if __name__ == '__main__':
     main()

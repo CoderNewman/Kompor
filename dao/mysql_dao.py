@@ -4,7 +4,7 @@ Created on Aug 31, 2017
 @author: Coder_J
 '''
 import pymysql.cursors
-from configure.cn_setting import CN_MYSQL_HOST, CN_MYSQL_USER, CN_MYSQL_PASSWD,\
+from configure.setting_cn import CN_MYSQL_HOST, CN_MYSQL_USER, CN_MYSQL_PASSWD,\
     CN_MYSQL_DB
 
 from tools.format_print import jprint as print

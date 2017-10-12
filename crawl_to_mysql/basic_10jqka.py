@@ -15,8 +15,8 @@ if base_dir not in sys.path:
 from crawl_to_cassandra.basic_10jqka import flush
 from crawl_lib.crawl import crawl
 from dao.mysql_dao import mysql_dao
-from configure.cn_setting import DAY, LINE, OFF_SHARE,\
-    CN_MYSQL_TABLES_STOCK_BASIC_FROM_10JQKA, CN_MYSQL_DB
+from configure.setting import LINE, OFF_SHARE, DAY
+from configure.setting_cn import CN_MYSQL_TABLES_STOCK_BASIC_FROM_10JQKA, CN_MYSQL_DB
 from url_lib import url_cn
 from configure.area_config import AREA_DICTS_KEY, AREA_KEY
 from tools.common import filt_codes
