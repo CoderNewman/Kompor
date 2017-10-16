@@ -19,9 +19,12 @@ def jprint(*args, sep = ' ', end='\n'):  # @ReservedAssignment
         print(*args, sep = sep, end=end)
         
     if PRINT_KEY is PRINT_TYPE.all or PRINT_KEY is PRINT_TYPE.log:  # @UndefinedVariable
-        if args:
-            log_info = "" 
-            for arg in args:
-                log_info += str(arg) + " "
-            logger.info(log_info)
+        write_log(*args)
         
+        
+def write_log(*args):
+    if args:
+        log_info = "" 
+        for arg in args:
+            log_info += str(arg) + " "
+        logger.info(log_info)

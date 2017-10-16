@@ -30,7 +30,10 @@ def create_concurrent_logger(logger_name, level):
     @author: liqing@kavout.com
     """
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    logfile = os.path.join(base_dir,"logs",logger_name + ".log")
+    log_path = os.path.join(base_dir,"logs")
+    if not os.path.exists(log_path):
+            os.makedirs(log_path)    
+    logfile = os.path.join(log_path, logger_name + ".log")
     filesize = 800*1024*1024
     log = logging.getLogger(logger_name)
     rotate_handler = ConcurrentRotatingFileHandler(logfile, "a", filesize, 5,encoding="utf-8")
