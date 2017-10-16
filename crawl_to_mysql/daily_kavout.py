@@ -17,7 +17,7 @@ from dao.mysql_dao import mysql_dao
 from configure.area_config import AREA_KEY
 from crawl_to_cassandra.basic_10jqka import flush
 from crawl_lib.kavout import get_hs_price
-from tools.format_print import jprint as print
+from kom_tools.format_print import jprint as print
 
 
 db = mysql_dao()

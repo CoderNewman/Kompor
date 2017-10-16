@@ -14,7 +14,7 @@ if base_dir not in sys.path:
 from configure.area_config import AREA_KEY
 from crawl_to_cassandra.basic_10jqka import flush
 from dao.mysql_dao import mysql_dao
-from tools.format_print import jprint as print
+from kom_tools.format_print import jprint as print
 
 SQL_SELECT = "SELECT k.`code`, k.date, k.`open`, k.high, k.low, k.`close`, k.vol, \
 k.adj_open, k.adj_high, k.adj_low, k.adj_close, k.adj_vol, d.`open`, d.high, d.low, \

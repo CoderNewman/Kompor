@@ -8,13 +8,14 @@ import sys
 import json
 import datetime
 from time import sleep
+from kom_tools import notice
 
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
 
-from configure.setting import DAY, LINE, OFF_SHARE, ADJ_SHARE
+from configure.setting import DAY, LINE, OFF_SHARE, ADJ_SHARE, MONITOR_MAILS
 from crawl_lib.crawl import crawl
 from url_lib import url_us
 from configure.area_config import AREA_DICTS_KEY, AREA_KEY
@@ -23,7 +24,7 @@ from configure.setting_us import US_CASSANDRA_HOSTS, US_CASSANDRA_PASSWD,\
     US_CASSANDRA_PORT, US_CASSANDRA_USER, US_CASSANDRA_KEYSPACE,\
     US_TABLES_STOCK_DAILY_OFF_SHARE_FROM_10JQKA,\
     US_TABLES_STOCK_DAILY_ADJ_SHARE_FROM_10JQKA
-from tools.format_print import jprint as print
+from kom_tools.format_print import jprint as print
 
 crawl = crawl()
 
@@ -51,7 +52,7 @@ class sam(object):
         print('crawl symbols length is', len(symbols))
         
         if self.area is AREA_DICTS_KEY.usa:
-            self.crawl_daily_us(symbols)
+            return self.crawl_daily_us(symbols)
             
             
     def insert_to_db(self, table_name, elements):
@@ -77,11 +78,12 @@ class sam(object):
         headers = {}
         headers['Referer'] = "http://stockpage.10jqka.com.cn/HQ_v4.html"
         error_syms = self._crawl_daily_us(symbols, headers, OFF_SHARE, US_TABLES_STOCK_DAILY_OFF_SHARE_FROM_10JQKA)
-        error_symbols.append(error_syms)
+        error_symbols.append(['OFF_SHARE', error_syms])
         error_syms = self._crawl_daily_us(symbols, headers, ADJ_SHARE, US_TABLES_STOCK_DAILY_ADJ_SHARE_FROM_10JQKA)
-        error_symbols.append(error_syms)
+        error_symbols.append(['ADJ_SHARE', error_syms])
         
         print(error_symbols)
+        return error_symbols
         
     def _crawl_daily_us(self, symbols, headers, share_type, table_name):
         error_symbols = []
@@ -171,13 +173,19 @@ class sam(object):
         
         
 def main():
-    print('start calculate symbol list worker !')
+    print('start daily_10jqka worker !')
     newman  = sam(AREA_KEY)
     symbols = newman.get_symbols()
     symbols.sort()
-    newman.crawl_daily(symbols)
+    error_symbols = newman.crawl_daily(symbols)
     
-    print('start calculate symbol list worker has Completed !')
+    msg = 'daily_10jqka worker has Completed !\n' +\
+        'error symbols: \n' +\
+        str(error_symbols)
+    
+    notice.send_email(MONITOR_MAILS, 'daily_10jqka has finished !' ,msg)
+    print('email has sent.')
+    print('daily_10jqka worker has Completed !')
 
 if __name__ == "__main__":
     main()

@@ -14,7 +14,7 @@ if base_dir not in sys.path:
 
 from configure.common_config import CRAWL_PAGE_TYPE
 from configure.area_config import AREA_DICTS_KEY, AREA_KEY
-from configure.setting import LINE, OFF_SHARE, DAY
+from configure.common_config import LINE, OFF_SHARE, DAY
 from configure.setting_cn import CN_CASSANDRA_KEYSPACE,\
     CN_CASSANDRA_HOSTS, CN_CASSANDRA_PASSWD, CN_CASSANDRA_PORT,\
     CN_CASSANDRA_USER, CN_TABLES_STOCK_RATIO_FROM_10JQKA,\
@@ -27,7 +27,7 @@ from configure.setting_us import US_CASSANDRA_KEYSPACE,\
 from crawl_lib.crawl import crawl
 from url_lib import url_cn, url_us
 from dao.casd_dao import CassandraDao
-from tools.format_print import jprint as print
+from kom_tools.format_print import jprint as print
 
 import warnings
 warnings.filterwarnings("ignore")

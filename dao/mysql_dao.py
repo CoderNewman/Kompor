@@ -7,7 +7,7 @@ import pymysql.cursors
 from configure.setting_cn import CN_MYSQL_HOST, CN_MYSQL_USER, CN_MYSQL_PASSWD,\
     CN_MYSQL_DB
 
-from tools.format_print import jprint as print
+from kom_tools.format_print import jprint as print
 
 class mysql_dao(object):
     '''

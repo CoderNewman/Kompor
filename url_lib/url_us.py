@@ -3,7 +3,7 @@ Created on Oct 12, 2017
 
 @author: Coder_J
 '''
-from configure.setting import LINE
+from configure.common_config import LINE
 from configure.area_config import AREA_KEY
 """
 url example
