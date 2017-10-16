@@ -1,0 +1,8 @@
+5、查询股票的日级别的股价信息，数据来源Kibot和Xiginte:
+/quote/prices/daily?symbols={symbols}&endTime={endTime}&interval={interval}&period={period}&adjusted={adjusted}&dataSource={dataSource}&index={index}&candlestick={0 or 1}&price={0 or 1}&startTime={startTime}&token={token}
+
+dataSource  ：  xiginte数据来源选项，缺省是kibot数据。0:kibot,1:xiginte,2:quandl
+
+token = 6fab4b8e8bd63ccd37d1a5130a32659e
+
+

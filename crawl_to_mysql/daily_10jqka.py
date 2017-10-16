@@ -132,7 +132,7 @@ def worker_hs_adj(codes, name):
 def main():
 #     codes_usa = tool.get_codes("usa")
     codes_hs = flush(AREA_KEY).get_db_symbols()
-    print('daily 10jqka : codes is', len(codes_hs)
+    print('daily 10jqka : codes is', len(codes_hs))
     
 #     for x in [chr(i) for i in range(65,91)]:
 #         p = multiprocessing.Process(target = worker_usa, args = (tool.filt_codes(codes_usa, x), x, ))

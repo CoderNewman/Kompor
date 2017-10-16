@@ -7,7 +7,7 @@ from configure.setting import LINE
 from configure.area_config import AREA_KEY
 """
 url example
-http://q.10jqka.com.cn/index/index/board/all/field/zdf/order/desc/page/1/ajax/1/
+http://q.10jqka.com.cn/index/index/board/all/field/zdf/order/desc/page/1/ajax/1/ 号码排序
 http://d.10jqka.com.cn/v2/line/hs_600000/00/last.js
 """
 

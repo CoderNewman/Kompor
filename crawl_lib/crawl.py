@@ -8,6 +8,7 @@ import json
 
 from requests.models import Response
 from bs4 import BeautifulSoup
+from requests.adapters import HTTPAdapter
 
 
 class crawl(object):
@@ -15,20 +16,32 @@ class crawl(object):
     crawl_lib
     '''
 
-    def craw_to_string(self, url):
+    def craw_to_string(self, url, headers=None):
         '''  爬出文本数据  '''
         
         result = ''
-        r= Response() 
+        r= Response()
+        
+        _headers = {}
+        _headers['Accept-Encoding'] = 'gzip, deflate'
+        _headers['User-agent']      = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'
+        _headers['Accept']          = '*/*'
+#         _headers['Referer']         = 'http://stockpage.10jqka.com.cn/HQ_v4.html'
+        
+        if headers is not None:
+            for head in headers:
+                _headers[head] = headers[head]
+        
         try:
-            r = requests.get(url, verify=False)
+#             r = requests.get(headers, verify=False)
+            r = requests.get(url, headers = _headers, verify=False)
         except:
             pass
 
         index = 0
         while r.status_code != 200:
             try:
-                r = requests.get(url)
+                r = requests.get(url, headers = _headers, verify=False)
             except:
                 pass
                 
@@ -38,13 +51,15 @@ class crawl(object):
             
         if r.status_code == 200:
             result = str(r.text)
+        else:
+            print('crawl response error', r.status_code)
             
         return result
             
-    def craw_to_json(self, url):
+    def craw_to_json(self, url, headers=None):
         '''  爬出json数据  '''
         result = ''
-        text = self.craw_to_string(url)
+        text = self.craw_to_string(url, headers)
         
         index = text.find("(");
         title = text[0:index]
@@ -56,18 +71,18 @@ class crawl(object):
         
         return result
     
-    def craw_to_list(self, url):
+    def craw_to_list(self, url, headers=None):
         '''  爬出数据数组  '''
         
         data = []
         try:
-            for d in str(self.craw_to_json(url)['data']).split(';'):
+            for d in str(self.craw_to_json(url, headers)['data']).split(';'):
                 data.append(d)
         except:
             pass
         return data
     
-    def craw_to_bs4(self, url):
-        html = self.craw_to_string(url)
+    def craw_to_bs4(self, url, headers=None):
+        html = self.craw_to_string(url, headers)
         soup = BeautifulSoup(html)
         return soup

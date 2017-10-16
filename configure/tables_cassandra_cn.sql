@@ -1,6 +1,7 @@
 -- 建库 中国区
 CREATE KEYSPACE cn_kavoutdata WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': '1', 'dc2': '1'}  AND durable_writes = true;
 
+use cn_kavoutdata;
 
 -- stock ratio value  股票指数信息
 create table if not exists stock_ratio_from_10jqka(

@@ -18,9 +18,14 @@ from configure.setting import LINE, OFF_SHARE, DAY
 from configure.setting_cn import CN_CASSANDRA_KEYSPACE,\
     CN_CASSANDRA_HOSTS, CN_CASSANDRA_PASSWD, CN_CASSANDRA_PORT,\
     CN_CASSANDRA_USER, CN_TABLES_STOCK_RATIO_FROM_10JQKA,\
-    CN_TABLES_STOCK_BASIC_FROM_10JQKA
+    CN_TABLES_STOCK_BASIC_FROM_10JQKA    
+from configure.setting_us import US_CASSANDRA_KEYSPACE,\
+    US_TABLES_STOCK_RATIO_FROM_10JQKA, US_CASSANDRA_HOSTS, US_CASSANDRA_PASSWD,\
+    US_CASSANDRA_PORT, US_CASSANDRA_USER,\
+    US_TABLES_STOCK_DAILY_SYMBOLS_FROM_10JQKA
+
 from crawl_lib.crawl import crawl
-from url_lib import url_cn
+from url_lib import url_cn, url_us
 from dao.casd_dao import CassandraDao
 from tools.format_print import jprint as print
 
@@ -35,17 +40,24 @@ class flush(object):
     '''
 
 
-    def __init__(self, area = None, keyspace = CN_CASSANDRA_KEYSPACE):
+    def __init__(self, area = None):
         '''
         Constructor
         '''
-        self.cassandra_dao = CassandraDao(CN_CASSANDRA_USER, CN_CASSANDRA_PASSWD, CN_CASSANDRA_HOSTS, CN_CASSANDRA_PORT)
+        self.cassandra_dao = None
         self.area = None
-        self.keyspace = keyspace
+        self.keyspace = None
         
         if area in AREA_DICTS_KEY:
             self.area = area
-            print('crawl area', area)
+            print('flush area', area)
+            
+        if area is AREA_DICTS_KEY.hs:  # @UndefinedVariable
+            self.cassandra_dao = CassandraDao(CN_CASSANDRA_USER, CN_CASSANDRA_PASSWD, CN_CASSANDRA_HOSTS, CN_CASSANDRA_PORT)
+            self.keyspace      = CN_CASSANDRA_KEYSPACE
+        elif area is AREA_DICTS_KEY.usa:
+            self.cassandra_dao = CassandraDao(US_CASSANDRA_USER, US_CASSANDRA_PASSWD, US_CASSANDRA_HOSTS, US_CASSANDRA_PORT)
+            self.keyspace      = US_CASSANDRA_KEYSPACE
     
     def craw_ratio(self):
         print('crawl symbols :')
@@ -72,29 +84,33 @@ class flush(object):
                 break
             else:
                 page_number += 1
-        print('crawl symbols completed !')
+        print('crawl hs symbols completed !')
         return stocks
     
     def _craw_ratio_usa(self):
             
         url = "http://d.10jqka.com.cn/v6/time/gzs_SPX/last.js"
-        json = crawler.craw_to_json(url)
-        last_date = json['gzs_SPX']['date']
+        headers = {
+            "Referer":"http://stockpage.10jqka.com.cn/HQ_v4.html",
+            }
+        json_val = crawler.craw_to_json(url, headers = headers)
+        
+        last_date = json_val['gzs_SPX']['date']
         
         stocks = [last_date, ]
         page_number = 1
         while(True):
-            url = url_cn.get_code_url(page_number)
-            page_stock, is_tail = self.crawl_hs(url, CRAWL_PAGE_TYPE.html)  # @UndefinedVariable
+            url = url_us.get_code_url(page_number)
+            page_stock, is_tail = self.crawl_table(url, CRAWL_PAGE_TYPE.html)  # @UndefinedVariable
             stocks.append(page_stock)
             if is_tail:
                 break
             else:
                 page_number += 1
-        print('crawl symbols completed !')
+        print('crawl us symbols completed !')
         return stocks
 
-    def crawl_hs(self, url, crawl_page_type):
+    def crawl_table(self, url, crawl_page_type):
         if crawl_page_type is CRAWL_PAGE_TYPE.html:  # @UndefinedVariable
             soup = crawler.craw_to_bs4(url)
             tbody = soup.table.tbody
@@ -116,31 +132,29 @@ class flush(object):
 
     def insert_ratio_to_db(self, stocks):
         if self.area is AREA_DICTS_KEY.hs:  # @UndefinedVariable
-            return self._insert_ratio_to_db_hs()
+            return self._insert_ratio_to_db_hs(stocks)
         
         elif self.area is AREA_DICTS_KEY.usa:
-            return self._insert_ratio_to_db_usa()
+            return self._insert_ratio_to_db_usa(stocks)
         
     def _insert_ratio_to_db_usa(self, stocks):
-        sql = "UPDATE " + CN_TABLES_STOCK_RATIO_FROM_10JQKA + " SET \
+        sql = "UPDATE " + US_TABLES_STOCK_RATIO_FROM_10JQKA + " SET \
                 name                  = ?, \
                 price                 = ?, \
                 size_ratio            = ?, \
                 rise_fall             = ?, \
-                pace_ratio            = ?, \
                 changed_hands_ratio   = ?, \
-                than                  = ?, \
-                amplitude_ratio       = ?, \
+                volume                = ?, \
+                pe_ratio              = ?, \
                 turnover              = ?, \
-                shares_outstanding    = ?, \
-                current_market        = ?, \
-                pe_ratio              = ?  \
+                week_high_52          = ?, \
+                weeks_minimum_52      = ?  \
             where \
                 symbol = ? and \
                 date = ? "
 
-        date = stocks[0]
-        date = datetime.datetime.strptime(date,'%Y%m%d')
+        _date = stocks[0]
+        date = datetime.datetime.strptime(_date,'%Y%m%d')
         elements = []
         del stocks[0]
         for page in stocks:
@@ -151,22 +165,23 @@ class flush(object):
                     price                 = row[5]
                     size_ratio            = row[6]
                     rise_fall             = row[7]
-                    pace_ratio            = row[8]
+                    pe_ratio              = row[8]
                     changed_hands_ratio   = row[9]
-                    than                  = row[10]
-                    amplitude_ratio       = row[11]
-                    turnover              = row[12]
-                    shares_outstanding    = row[13]
-                    current_market        = row[14]
-                    pe_ratio              = row[15]
+                    volume                = row[10]
+                    turnover              = row[11]
+                    week_high_52          = row[12]
+                    weeks_minimum_52      = row[13]
                     
                     elements.append(
-                        [name, price, size_ratio, rise_fall, pace_ratio, \
-                         changed_hands_ratio, than, amplitude_ratio, turnover, \
-                         shares_outstanding, current_market, pe_ratio, symbol, date])
+                        [name, price, size_ratio, rise_fall, changed_hands_ratio, \
+                         volume, pe_ratio, turnover, week_high_52, \
+                         weeks_minimum_52, symbol, date])
                 except Exception as e:
                     print(e)
                     pass
+                
+        stocks.insert(0, _date)
+        
         if elements:
             self.cassandra_dao.batch_execute_prepared_one_sql(sql, elements, keyspace=self.keyspace ,slice_length=100)
             print('insert to db completed !')
@@ -189,8 +204,8 @@ class flush(object):
                 symbol = ? and \
                 date = ? "
 
-        date = stocks[0]
-        date = datetime.datetime.strptime(date,'%Y%m%d')
+        _date = stocks[0]
+        date = datetime.datetime.strptime(_date,'%Y%m%d')
         elements = []
         del stocks[0]
         for page in stocks:
@@ -217,6 +232,9 @@ class flush(object):
                 except Exception as e:
                     print(e)
                     pass
+                
+        stocks.insert(0, _date)
+        
         if elements:
             self.cassandra_dao.batch_execute_prepared_one_sql(sql, elements, keyspace=self.keyspace ,slice_length=100)
             print('insert to db completed !')
@@ -224,7 +242,12 @@ class flush(object):
 
     def get_db_symbols(self):
         symbols = []
-        sql = "SELECT DISTINCT SYMBOL FROM " + CN_TABLES_STOCK_RATIO_FROM_10JQKA
+        sql = ""
+        if self.area is AREA_DICTS_KEY.hs:  # @UndefinedVariable
+            sql = "SELECT DISTINCT SYMBOL FROM " + CN_TABLES_STOCK_RATIO_FROM_10JQKA
+        elif self.area is AREA_DICTS_KEY.usa:  # @UndefinedVariable
+            sql = "SELECT DISTINCT SYMBOL FROM " + US_TABLES_STOCK_RATIO_FROM_10JQKA
+            
         result_set = self.cassandra_dao.execute_sql(sql, keyspace=self.keyspace)
         for result in result_set:
             symbols.append(result.symbol)
@@ -232,13 +255,15 @@ class flush(object):
 
 
     def crawl_quote(self):
-        if self.area is AREA_DICTS_KEY.hs:  # @UndefinedVariable
-            symbols = self.get_db_symbols()
-#             print(symbols)
-            self.crawl_basic_from_10jqka(symbols, AREA_DICTS_KEY.hs)  # @UndefinedVariable
-    
+        symbols = self.get_db_symbols()
+        if self.area is AREA_DICTS_KEY.hs:  # @UndefinedVariable            
+            self.crawl_cn_basic_from_10jqka(symbols, AREA_DICTS_KEY.hs)  # @UndefinedVariable
+        
+#         elif self.area is AREA_DICTS_KEY.usa:  # @UndefinedVariable
+#             self.crawl_us_basic_from_10jqka(symbols, AREA_DICTS_KEY.usa)  # @UndefinedVariable
 
-    def crawl_basic_from_10jqka(self, symbols, area):
+
+    def crawl_cn_basic_from_10jqka(self, symbols, area):
         sql = "UPDATE " + CN_TABLES_STOCK_BASIC_FROM_10JQKA + " SET \
                 rt       = ?, \
                 total    = ?, \
@@ -273,11 +298,40 @@ class flush(object):
             self.cassandra_dao.batch_execute_prepared_one_sql(sql, elements, keyspace=self.keyspace ,slice_length=100)
             print('insert to db completed !')
     
+    def insert_symbols_to_db(self, stocks):
+        if self.area is AREA_DICTS_KEY.usa:  # @UndefinedVariable
+            sql = "UPDATE " + US_TABLES_STOCK_DAILY_SYMBOLS_FROM_10JQKA + " SET \
+                    symbols = ?  \
+                where \
+                    trading_date = ? "
+    
+            _date = stocks[0]
+            date = datetime.datetime.strptime(_date,'%Y%m%d')
+            elements = []
+            symbols  = []
+            del stocks[0]
+            for page in stocks:
+                for row in page:
+                    symbol = row[1]
+                    symbols.append(symbol)
+            
+            symbols = str(symbols)
+            elements.append([symbols, date])                    
+            stocks.insert(0, _date)            
+            if elements:
+                self.cassandra_dao.batch_execute_prepared_one_sql(sql, elements, keyspace=self.keyspace ,slice_length=100)
+                print('insert to db completed !')
+            
+            
+            
+            
+    
 def main():
     print('start 10jqka worker !')
     crawl = flush(AREA_KEY)
     stocks = crawl.craw_ratio()
     crawl.insert_ratio_to_db(stocks)
+    crawl.insert_symbols_to_db(stocks)
     crawl.crawl_quote()
     print('crawl 10jqka has Completed !')
 
