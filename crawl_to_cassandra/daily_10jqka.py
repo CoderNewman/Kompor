@@ -7,15 +7,14 @@ import os
 import sys
 import json
 import datetime
-from time import sleep
-from kom_tools import notice
-
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
 
-from configure.setting import DAY, LINE, OFF_SHARE, ADJ_SHARE, MONITOR_MAILS
+from kom_tools import notice
+from configure.setting import MONITOR_MAILS
+from configure.common_config import DAY, LINE, OFF_SHARE, ADJ_SHARE
 from crawl_lib.crawl import crawl
 from url_lib import url_us
 from configure.area_config import AREA_DICTS_KEY, AREA_KEY
